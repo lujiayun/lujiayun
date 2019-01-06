@@ -1,0 +1,1123 @@
+Person.h
+#ifndef PERSON_H
+#define PERSON_H
+#include <string>
+using namespace std;
+class Person {	//Person类（Admin、Owner、User三个类的基类）
+public:
+	Person();
+	Person(int id, string name);
+	~Person();
+	void setId(int id);
+	int getId() const;
+	void setName(string name);
+	string getName() const;
+	virtual void PrintInfo() const;
+private:
+	int id;	//账号
+	string name;	//姓名
+};
+#endif // !PERSON_H
+
+Admin.h
+#ifndef ADMIN_H
+#define ADMIN_H
+#include "Person.h"
+class Admin : public Person		//继承Person类----（1）
+{
+public:
+	Admin();	//默认构造
+	Admin(int adminId, string adminName, string adminPassword);	//含参构造
+	~Admin();	//析构
+	void setPassword(string password);
+	string getPassword() const;
+	virtual void PrintInfo() const;	//虚函数----（3）
+private:
+	string password;
+};
+#endif
+User.h
+#ifndef USER_H
+#define USER_H
+#include <vector>
+#include "Order.h"
+#include "Admin.h"
+using namespace std;
+class User :public Admin	//User是Admin的派生，是Person的三级派生----（2）
+{
+	friend class Admin;
+public:
+	User();
+	User(int id, string name, string password, string phoneNumber);
+	User(const User &copy);
+	~User();
+	void setPhoneNumber(string phoneNumber);
+	string getPhoneNumber() const;
+	void setVecOrder(vector<Order> vecOrder);
+	vector<Order> getVecOrder() const;
+	void addOrder(Order order);
+	bool deleteOrderByNumber(int orderNumber);
+	bool updateOrderByNumber(int orderNumber, Order order);
+	virtual void PrintInfo() const;
+private:
+	string phoneNumber;
+	vector<Order> vecOrder;
+};
+#endif // !USER_H
+
+
+Order.h
+#ifndef ORDER_H
+#define ORDER_H
+#include <string>
+#include <ctime>
+#include <vector>
+#include "Dish.h"
+using namespace std;
+class Order
+{
+public:
+	Order(int orderNumber=0, time_t time=time(0));
+	Order(const Order &copy);
+	~Order();
+	const Order &operator=(const Order &right);
+	void setOrderNumber(int orderNumber);
+	int getOrderNumber() const;
+	void setOrderTime(time_t time);
+	time_t getOrderTime() const;
+	string getOrderDate() const;
+	vector<Dish> getMenu() const;
+	void addDish(Dish dish);
+	bool deleteDish(int dishId);
+	bool updateDishByIndex(int index, Dish dish);
+	double getTotalPrice() const;
+	void PrintOrderInfo() const;
+	static void incOrderCount();	//静态成员函数----（7）
+	static int getOrderCount();
+private:
+	int orderNumber;	//订单号
+	time_t orderTime;	//订单时间
+	vector<Dish> menu;	//菜单
+	static int orderCount;	//订单数量（静态数据成员）----（7）
+};
+#endif // !ORDER_H
+
+Dish.h
+#ifndef DISH_H
+#define DISH_H
+#include <string>
+using namespace std;
+class Dish		//菜肴类
+{
+public:
+	Dish();
+	Dish(int dishId, string dishName, double dishPrice, int dishCount = 1);
+	Dish(const Dish &copy);		//拷贝构造函数
+	~Dish();
+	const Dish &operator=(const Dish &right);	//重载赋值运算符
+	void setDishId(int dishId);
+	int getDishId() const;
+	void setDishName(string dishName);
+	string getDishName() const;
+	void setDishPrice(double dishPrice);
+	double getDishPrice() const;
+	void setCount(int dishCount);
+	int getCount() const;
+	void PrintInfo() const;
+private:
+	int dishId;		//菜肴编号
+	string dishName;	//名称
+	double dishPrice;	//价格
+	int dishCount;		//份数
+};
+#endif // !DISH_H
+
+Owner.h
+#ifndef	OWNER_H
+#define OWNER_H
+#include "Person.h"
+#include "Admin.h"
+class Owner : public Person
+{
+	friend class Admin;		//Admin为Owner类的友元类----（10）
+public:
+	Owner();
+	Owner(int ownerId, string ownerName, string ownerPassword);
+	Owner(const Owner &copy);
+	~Owner();
+	void setPassword(string password);
+	string getPassword() const;
+	virtual void PrintInfo();
+private:
+	string password;
+};
+#endif
+
+
+Person.cpp
+
+#include <iostream>
+#include <iomanip>
+#include "Person.h"
+using namespace std;
+Person::Person()
+{
+}
+Person::Person(int id, string name)
+{
+	setId(id);
+	setName(name);
+}
+Person::~Person()
+{
+}
+void Person::setId(int id)
+{
+	this->id = id;
+}
+int Person::getId() const
+{
+	return id;
+}
+void Person::setName(string name)
+{
+	this->name = name;
+}
+string Person::getName() const
+{
+	return name;
+}
+void Person::PrintInfo() const
+{
+	cout << setw(7) << id
+		<< setw(10) << name;
+}
+Admin.cpp
+#include <iostream>
+#include <iomanip>
+#include "Admin.h"
+Admin::Admin()
+{
+}
+Admin::Admin(int adminId, string adminName, string adminPassword)
+	:Person(adminId, adminName)
+{
+	setPassword(adminPassword);
+}
+Admin::~Admin()
+{
+}
+void Admin::setPassword(string password)
+{
+	this->password = password;
+}
+string Admin::getPassword() const
+{
+	return password;
+}
+void Admin::PrintInfo() const
+{
+	Person::PrintInfo();
+	cout << setw(8) << password;
+}
+User.cpp
+#include <string>
+#include <iostream>
+#include <iomanip>
+#include "User.h"
+using namespace std;
+User::User()
+{
+}
+User::User(int id, string name, string password, string phoneNumber)
+	:Admin(id, name, password)
+{
+	setPhoneNumber(phoneNumber);
+}
+User::User(const User &copy)
+	: Admin(copy.getId(), copy.getName(), copy.getPassword())
+{
+	phoneNumber = copy.getPhoneNumber();
+}
+User::~User()
+{
+}
+void User::setPhoneNumber(string phoneNumber)
+{
+	this->phoneNumber = phoneNumber;
+}
+string User::getPhoneNumber() const
+{
+	return phoneNumber;
+}
+void User::setVecOrder(vector<Order> vecOrder)
+{
+	this->vecOrder = vecOrder;
+}
+void User::addOrder(Order order)
+{
+	vecOrder.push_back(order);
+}
+vector<Order> User::getVecOrder() const
+{
+	return vecOrder;
+}
+bool User::deleteOrderByNumber(int orderNumber)
+{
+	vector<Order>::iterator it;
+	for (it = vecOrder.begin(); it != vecOrder.end(); ++it) {
+		if (it->getOrderNumber() == orderNumber) {
+			vecOrder.erase(it);
+			return 1;
+		}
+	}
+	return 0;
+}
+bool User::updateOrderByNumber(int orderNumber, Order order)
+{
+	vector<Order>::iterator it;
+	for (it = vecOrder.begin(); it != vecOrder.end(); ++it) {
+		if (it->getOrderNumber() == orderNumber) {
+			*it = order;
+			return 1;
+		}
+	}
+	return 0;
+}
+void User::PrintInfo() const
+{
+	Admin::PrintInfo();
+	cout << setw(15) << phoneNumber;
+}
+Order.cpp
+
+#include <iostream>
+#include <iomanip>
+#include <vector>
+#include "Order.h"
+using namespace std;
+int Order::orderCount = 0;
+Order::Order(int orderNumber, time_t orderTime)
+{
+	setOrderNumber(orderNumber);
+	setOrderTime(orderTime);
+}
+Order::Order(const Order &copy)
+{
+	orderNumber = copy.getOrderNumber();
+	orderTime = copy.getOrderTime();
+	menu = copy.getMenu();
+}
+Order::~Order()
+{
+}
+const Order &Order::operator=(const Order &right)
+{
+	if (&right != this) {
+		orderNumber = right.getOrderNumber();
+		orderTime = right.getOrderTime();
+		menu = right.getMenu();
+	}
+	return *this;
+}
+void Order::setOrderNumber(int orderNumber)
+{
+	this->orderNumber = orderNumber;
+}
+int Order::getOrderNumber() const
+{
+	return orderNumber;
+}
+void Order::setOrderTime(time_t orderTime)
+{
+	this->orderTime = orderTime;
+}
+time_t Order::getOrderTime() const
+{
+	return orderTime;
+}
+string Order::getOrderDate() const
+{ 
+	char tmp[64];
+	strftime(tmp, sizeof(tmp), "%Y-%m-%d %H:%M:%S", localtime(&orderTime));
+	return (string)tmp;
+}
+vector<Dish> Order::getMenu() const
+{
+	return menu;
+}
+void Order::addDish(Dish dish)
+{
+	menu.push_back(dish);
+}
+bool Order::deleteDish(int dishId)
+{
+	vector<Dish>::iterator it;
+	for (it = menu.begin(); it != menu.end(); ++it) {
+		if (it->getDishId() == dishId) {
+			menu.erase(it);
+			return 1;
+		}
+	}
+	return 0;
+}
+bool Order::updateDishByIndex(int index, Dish dish)
+{
+	int dishNum = menu.size();    //返回容器中的实际数据的个数
+	if (index < 0 || index >= dishNum)
+		return 0;
+	menu.at(index) = dish;
+}
+double Order::getTotalPrice() const
+{
+	double tot = 0;
+	vector<Dish>::const_iterator menuIt;
+	for (menuIt = menu.begin(); menuIt != menu.end(); ++menuIt) {
+		tot += menuIt->getDishPrice();
+	}
+	return tot;
+}
+void Order::PrintOrderInfo() const
+{
+	cout << setw(8) << orderNumber
+		<< setw(21) << getOrderDate()
+		<< setw(8) << fixed << setprecision(2) << getTotalPrice();
+}
+void Order::incOrderCount()
+{
+	++(Order::orderCount);
+}
+int Order::getOrderCount()
+{
+	return Order::orderCount;
+}
+Dish.cpp
+#include <iostream>
+#include <iomanip>
+#include "Dish.h"
+using namespace std;
+Dish::Dish()
+{
+}
+Dish::Dish(int dishId, string dishName, double dishPrice, int dishCount)
+{
+	setDishId(dishId);
+	setDishName(dishName);
+	setDishPrice(dishPrice);
+	setCount(dishCount);
+}
+Dish::Dish(const Dish &copy)
+{
+	dishId = copy.getDishId();
+	dishName = copy.getDishName();
+	dishPrice = copy.getDishPrice();
+	dishCount = copy.getCount();
+}
+Dish::~Dish()
+{
+}
+const Dish &Dish::operator=(const Dish &right)
+{
+	if (&right != this) {
+		dishId = right.getDishId();
+		dishName = right.getDishName();
+		dishPrice = right.getDishPrice();
+		dishCount = right.getCount();
+	}
+	return *this;
+}
+void Dish::setDishId(int dishId)
+{
+	this->dishId = dishId;
+}
+int Dish::getDishId() const
+{
+	return dishId;
+}
+void Dish::setDishName(string dishName)
+{
+	this->dishName = dishName;
+}
+string Dish::getDishName() const
+{
+	return dishName;
+}
+void Dish::setDishPrice(double dishPrice)
+{
+	this->dishPrice = dishPrice;
+}
+double Dish::getDishPrice() const
+{
+	return dishPrice;
+}
+void Dish::setCount(int dishCount)
+{
+	this->dishCount = dishCount;
+}
+int Dish::getCount() const
+{
+	return dishCount;
+}
+void Dish::PrintInfo() const
+{
+	cout << setw(6) << dishId
+		<< setw(12) << dishName
+		<< setw(8) << fixed << setprecision(2) << dishPrice;
+}
+Owner.cpp
+
+#include "Owner.h"
+Owner::Owner()
+{
+}
+Owner::Owner(int ownerId, string ownerName, string ownerPassword)
+	:Person(ownerId, ownerName)
+{
+	setPassword(ownerPassword);
+}
+Owner::Owner(const Owner &copy)
+	: Person(copy.getId(), copy.getName())
+{
+	password = copy.getPassword();
+}
+Owner::~Owner()
+{
+}
+void Owner::setPassword(string password)
+{
+	this->password = password;
+}
+string Owner::getPassword() const
+{
+	return password;
+}
+void Owner::PrintInfo()
+{
+	Person::PrintInfo();
+}
+
+Main.cpp
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <map>
+#include "Person.h"
+#include "Owner.h"
+#include "User.h"
+#include "Admin.h"
+#include "Dish.h"
+using namespace std;
+#define TABLENUM 20
+const string splitLine = "********************************************";
+char ownersFileName[] = "owners.txt";	//保存馆主文件名
+char usersFileName[] = "users.txt";	
+char dishesFileName[] = "dishes.txt";
+char adminsFileName[] = "admins.txt";
+vector<Owner> vecOwner;		//馆主（动态数组）----(6)
+vector<User> vecUser;		//用户
+vector<Admin> vecAdmin;		//管理员
+vector<Dish> vecDish;		//菜肴
+void LoadOwnersFromFile();	//从文件中读取馆主信息----（4）
+void LoadUsersFromFile();
+void LoadAdmin();
+void LoadDishes();
+int CheckLogIn(int id, string psw, int status);	//验证登录
+void RestaurantOwnerView(Owner *pOwner);	//馆主视图（指针）----(6)
+void SubscribersView(User *pUser);	//订餐用户视图
+void AdminView(Admin *pAdmin);	//管理员视图
+/*餐馆主人权限*/
+void ViewAllOrders();			//查看所有订单
+void FoodSalesStatistics();		//统计菜肴的销售量
+void TotalSalesStatistics();	//总销售额
+void AddDishFromMenu();			//向菜单添加新菜
+/*订餐用户权限*/
+void AddOrder(User *pUser);		//新建订单
+void DeleteOrder(User *pUser);	//删除订单
+void ViewOrder(User *pUser);	//查看订单
+void ViewMenu();	//查看菜单
+void AddDish(User *pUser, Order &order);	//添加菜肴（Order变量引用）----(5)
+void DeleteDish(User *pUser, Order &order);	//删除菜肴
+void UserMenu(User *pUser, Order &order);	//用户菜单
+//void SaveOrder(User &user, Order &order);
+/*管理员权限*/
+void AddUser();		//添加用户
+void DeleteUser();	//删除用户
+void ViewAllUsers();//查看所有用户
+void SaveUsers();	//保存用户信息
+/*工具函数*/
+void PrintInputError();	//打印出错信息
+int main()
+{
+	LoadOwnersFromFile();
+	LoadUsersFromFile();
+	LoadAdmin();
+	LoadDishes();
+
+	Owner *pOwner = NULL;	//指向当前馆主的指针
+	User *pUser = NULL;
+	Admin *pAdmin = NULL;
+	int id;		//账号
+	string psw;	//密码
+	int sel, res;	//选择, 返回结果
+	while (1) {
+		cout << splitLine << endl
+			<< "*   欢迎来到订餐系统！请选择您的身份：	   *" << endl
+			<< splitLine << endl
+			<< "*		1、餐馆主人		   *" << endl
+			<< "*		2、订餐用户		   *" << endl
+			<< "*		3、管理员		   *" << endl 
+			<< splitLine << endl;
+		cin >> sel;
+		cout << "账号：";
+		cin >> id;
+		cout << "密码：";
+		cin >> psw;
+		res = CheckLogIn(id, psw, sel);	//如果存在该馆主、用户或管理员返回向量的索引
+		if (res < 0) {
+			cout << "账号或密码错误！" << endl;
+			continue;
+		}
+		switch (sel)
+		{
+		case 1:
+			system("cls");	//清屏
+			pOwner = &(vecOwner.at(res));	//使指针指向当前登录的馆主(对象动态建立)-----（9）
+			RestaurantOwnerView(pOwner);
+			break;
+		case 2:
+			system("cls");
+			pUser = &(vecUser.at(res));
+			SubscribersView(pUser);
+			break;
+		case 3:
+			system("cls");
+			pAdmin = &(vecAdmin.at(res));
+			AdminView(pAdmin);
+			break;
+		default:
+			PrintInputError();
+			break;
+		}
+	}
+	return 0;
+}
+void LoadOwnersFromFile()
+{
+	FILE *pFile;
+	pFile = fopen(ownersFileName, "r");
+	int id;
+	char name[15], psw[10];
+	while (fscanf(pFile, "%d%s%s", &id, name, psw) != EOF) {
+		vecOwner.push_back(Owner(id, (string)name, (string)psw));
+	}
+}
+void LoadUsersFromFile()
+{
+	FILE *pFile;
+	pFile = fopen(usersFileName, "r");
+	int id;
+	char name[15], psw[10], phone[15];
+	while (fscanf(pFile, "%d%s%s%s", &id, name, psw, phone) != EOF) {
+		vecUser.push_back(User(id, (string)name, (string)psw, (string)phone));
+	}
+}
+void LoadAdmin()
+{
+	FILE *pFile;
+	pFile = fopen(adminsFileName, "r");
+	int id;
+	char name[15], psw[10];
+	while (fscanf(pFile, "%d%s%s", &id, name, psw) != EOF) {
+		vecAdmin.push_back(Admin(id, (string)name, (string)psw));
+	}
+}
+void LoadDishes()
+{
+	FILE *pFile;
+	pFile = fopen(dishesFileName, "r");
+	int id;
+	char name[15];
+	double price;
+	while (fscanf(pFile, "%d%s%lf", &id, name, &price) != EOF) {
+		vecDish.push_back(Dish(id, (string)name, price));
+	}
+}
+int CheckLogIn(int id, string psw, int status)
+{
+	if (status == 1) {
+		int ownerNum = vecOwner.size();
+		for (int i = 0; i < ownerNum; ++i) {
+			if (vecOwner.at(i).getId() == id && vecOwner.at(i).getPassword() == psw)
+				return i;
+		}
+	}
+	else if (status == 2) {
+		int userNum = vecUser.size();
+		for (int i = 0; i < userNum; ++i) {
+			if (vecUser.at(i).getId() == id && vecUser.at(i).getPassword() == psw)
+				return i;
+		}
+	}
+	else if (status == 3) {
+		int adminNum = vecAdmin.size();
+		for (int i = 0; i < adminNum; ++i) {
+			if (vecAdmin.at(i).getId() == id && vecAdmin.at(i).getPassword() == psw)
+				return i;
+		}
+	}
+	return -1;
+}
+void RestaurantOwnerView(Owner *pOwner)
+{
+	int sel;
+	while (1) {
+		cout << splitLine << endl
+			<< "*	    您好，" << pOwner->getName() << "!	身份：馆主 *" << endl
+			<< splitLine << endl
+			<< "*		1、查看所有订单		   *" << endl
+			<< "*		2、菜肴销售情况统计	   *" << endl
+			<< "*		3、总销售额统计		   *" << endl
+			<< "*		4、向菜单中添加菜肴	   *" << endl
+			<< "*		5、退出登录		   *" << endl
+			<< splitLine << endl;
+		cin >> sel;
+		switch (sel)
+		{
+		case 1:
+			ViewAllOrders();
+			break;
+		case 2:
+			FoodSalesStatistics();
+			break;
+		case 3:
+			TotalSalesStatistics();
+			break;
+		case 4:
+			AddDishFromMenu();
+			break;
+		case 5:
+			system("cls");
+			return;
+		default:
+			break;
+		}
+	}
+}
+void SubscribersView(User *pUser)
+{
+	int sel;
+	while (1) {
+		cout << splitLine << endl
+			<< "*	    您好，" << pUser->getName() << "!	身份：用户 *" << endl
+			<< splitLine << endl
+			<< "*		1、新建订单		   *" << endl
+			<< "*		2、删除订单		   *" << endl
+			<< "*		3、查看订单		   *" << endl
+			<< "*		4、退出登录		   *" << endl
+			<< splitLine << endl;
+		cin >> sel;
+		switch (sel)
+		{
+		case 1:
+			AddOrder(pUser);
+			break;
+		case 2:
+			DeleteOrder(pUser);
+			break;
+		case 3:
+			ViewOrder(pUser);
+			break;
+		case 4:
+			system("cls");
+			return;
+		default:
+			PrintInputError();
+			break;
+		}
+	}
+}
+void AdminView(Admin *pAdmin)
+{
+	int sel;
+	while (1) {
+		cout << splitLine << endl
+			<< "*	    您好，" << pAdmin->getName() << "!    身份：管理员   *" << endl
+			<< splitLine << endl
+			<< "*		1、添加用户		   *" << endl
+			<< "*		2、删除用户		   *" << endl
+			<< "*		3、查看用户		   *" << endl
+			<< "*		4、退出登录		   *" << endl
+			<< splitLine << endl;
+		cin >> sel;
+		switch (sel)
+		{
+		case 1:
+			AddUser();
+			break;
+		case 2:
+			DeleteUser();
+			break;
+		case 3:
+			ViewAllUsers();
+			break;
+		case 4:
+			SaveUsers();
+			system("cls");
+			return;
+		default:
+			PrintInputError();
+			break;
+		}
+	}
+}
+
+/*餐馆主人权限*/
+void ViewAllOrders()
+{
+	cout << left
+		<< setw(8) << "订单号"
+		<< setw(10) << "用户"
+		<< setw(21) << "下单时间"
+		<< setw(8) << "总价"
+		<< endl;
+	vector<User>::iterator it;
+	for (it = vecUser.begin(); it != vecUser.end(); ++it) {
+		vector<Order> orders = it->getVecOrder();
+		vector<Order>::iterator orderIt;
+		for (orderIt = orders.begin(); orderIt != orders.end(); ++orderIt) {
+			cout << setw(8) << orderIt->getOrderNumber()
+				<< setw(10) << it->getName()
+				<< setw(21) << orderIt->getOrderDate()
+				<< setw(8) << orderIt->getTotalPrice()
+				<< endl;
+		}
+	}
+}
+void FoodSalesStatistics()
+{
+	map<string, int> mapDishNameCount;
+	map<string, int>::iterator mapIt;
+	vector<Dish>::iterator it;
+	for (it = vecDish.begin(); it != vecDish.end(); ++it) {
+		mapDishNameCount.insert(pair<string, int>(it->getDishName(), 0));
+	}
+	vector<User>::iterator userIt;
+	for (userIt = vecUser.begin(); userIt != vecUser.end(); ++userIt) {
+		vector<Order> orders = userIt->getVecOrder();
+		vector<Order>::iterator orderIt;
+		for (orderIt = orders.begin(); orderIt != orders.end(); ++orderIt) {
+			vector<Dish> menu = orderIt->getMenu();
+			vector<Dish>::iterator menuIt;
+			for (menuIt = menu.begin(); menuIt != menu.end(); ++menuIt) {
+				mapIt = mapDishNameCount.find(menuIt->getDishName());
+				if (mapIt != mapDishNameCount.end())
+					mapIt->second += menuIt->getCount();
+			}
+		}
+	}
+	cout << left
+		<< setw(12) << "菜名"
+		<< setw(8) << "销售量"
+		<< endl;
+	for (mapIt = mapDishNameCount.begin(); mapIt != mapDishNameCount.end(); ++mapIt) {
+		if (mapIt->second) {
+			cout << setw(12) << mapIt->first
+				<< setw(8) << mapIt->second
+				<< endl;
+		}
+	}
+}
+void TotalSalesStatistics()
+{
+	double tot = 0;
+	vector<Order>::iterator orderIt;
+	vector<User>::iterator userIt;
+	for (userIt = vecUser.begin(); userIt != vecUser.end(); ++userIt) {
+		vector<Order> orders = userIt->getVecOrder();
+		vector<Order>::iterator orderIt;
+		for (orderIt = orders.begin(); orderIt != orders.end(); ++orderIt) {
+			vector<Dish> menu = orderIt->getMenu();
+			vector<Dish>::iterator menuIt;
+			for (menuIt = menu.begin(); menuIt != menu.end(); ++menuIt) {
+				tot += menuIt->getDishPrice();
+			}
+		}
+	}
+	cout << left
+		<< setw(8) << "总销售额" << endl;
+	cout << setw(8) << tot << endl;
+}
+void AddDishFromMenu()
+{
+	string name;
+	double price;
+	cout << "菜名：";
+	cin >> name;
+	vector<Dish>::iterator dishIt;
+	for (dishIt = vecDish.begin(); dishIt != vecDish.end(); ++dishIt) {
+		if (dishIt->getDishName() == name) {
+			cout << "该菜已存在！" << endl;
+			return;
+		}
+	}
+	cout << "价格：";
+	cin >> price;
+	Dish dish(vecDish.size() + 1, name, price);
+	vecDish.push_back(dish);
+	FILE *pFile;
+	pFile = fopen(dishesFileName, "a+");
+	fprintf(pFile, "%d %s %.0f\n", dish.getDishId(), dish.getDishName().c_str(), dish.getDishPrice());
+	fclose(pFile);
+	cout << "菜品添加成功！" << endl;
+}
+void AddOrder(User *pUser)
+{
+	Order order;
+	order.setOrderNumber(Order::getOrderCount() + 1);
+	Order::incOrderCount();
+	pUser->addOrder(order);
+	int sel, res;
+	while (1) {
+		cout << splitLine << endl
+			<< "*		1、查看菜单		   *" << endl
+			<< "*		2、添加菜肴		   *" << endl
+			<< "*		3、删除菜肴		   *" << endl
+			<< "*		4、我的菜单		   *" << endl
+			<< "*		5、返回上一级		   *" << endl
+			<< splitLine << endl;
+		cin >> sel;
+		switch (sel)
+		{
+		case 1:
+			ViewMenu();
+			break;
+		case 2:
+			AddDish(pUser, order);
+			break;
+		case 3:
+			DeleteDish(pUser, order);
+			break;
+		case 4:
+			UserMenu(pUser, order);
+			break;
+		case 5:
+			//SaveOrder(user, order);
+			return;
+		default:
+			PrintInputError();
+			break;
+		}
+	}
+}
+void DeleteOrder(User *pUser)
+{
+	int orderNumber;
+	cout << splitLine << endl
+		<< "订单号：";
+	cin >> orderNumber;
+	vector<Order> orders = pUser->getVecOrder();
+	vector<Order>::iterator ordersIt;
+	for (ordersIt = orders.begin(); ordersIt != orders.end(); ++ordersIt) {
+		if (ordersIt->getOrderNumber() == orderNumber) {
+			orders.erase(ordersIt);
+			pUser->setVecOrder(orders);
+			cout << "订单删除成功！" << endl;
+			return;
+		}
+	}
+	cout << "该订单不存在！" << endl;
+}
+void ViewOrder(User *pUser)
+{
+	cout << left
+		<< setw(8) << "订单号"
+		<< setw(21) << "下单时间"
+		<< setw(8) << "总价"
+		<< endl;
+	vector<Order> orders = pUser->getVecOrder();
+	vector<Order>::iterator ordersIt;
+	for (ordersIt = orders.begin(); ordersIt != orders.end(); ++ordersIt) {
+		ordersIt->PrintOrderInfo();
+		cout << endl;
+	}
+}
+void ViewMenu()
+{
+	cout << splitLine << endl
+		<< left
+		<< setw(6) << "编号"
+		<< setw(12) << "菜名"
+		<< setw(8) << "价格"
+		<< endl;
+	int dishNum = vecDish.size();
+	for (int i = 0; i < dishNum; ++i) {
+		vecDish.at(i).PrintInfo();
+		cout << endl;
+	}
+}
+void AddDish(User *pUser, Order &order)
+{
+	int id;
+	cout << "请输入菜的编号：";
+	cin >> id;
+	vector<Dish>::iterator dishIt;
+	for (dishIt = vecDish.begin(); dishIt != vecDish.end(); ++dishIt) {
+		if (dishIt->getDishId() == id) {
+			vector<Dish> menu = order.getMenu();
+			vector<Dish>::iterator menuIt;
+			bool isExist = 0;
+			int count;
+			cout << "请输入份额：";
+			cin >> count;
+			for (menuIt = menu.begin(); menuIt != menu.end(); ++menuIt) {
+				if (menuIt->getDishId() == id) {
+					Dish dish = *menuIt;
+					dish.setCount(dish.getCount() + count);
+					order.updateDishByIndex(menuIt - menu.begin(), dish);
+					pUser->updateOrderByNumber(order.getOrderNumber(), order);
+					isExist = 1;
+					break;
+				}
+			}
+			if (!isExist) {
+				dishIt->setCount(count);
+				order.addDish(*dishIt);
+				pUser->updateOrderByNumber(order.getOrderNumber(), order);
+			}
+			cout << "添菜成功！" << endl;
+			return;
+		}
+	}
+	cout << "该菜不存在！" << endl;
+}
+
+void DeleteDish(User *pUser, Order &order)
+{
+	int id;
+	cout << "请输入菜的编号：";
+	cin >> id;
+	vector<Dish> menu = order.getMenu();
+	vector<Dish>::iterator menuIt;
+	for (menuIt = menu.begin(); menuIt != menu.end(); ++menuIt) {
+		if (menuIt->getDishId() == id) {
+			order.deleteDish(id);
+			pUser->updateOrderByNumber(order.getOrderNumber(), order);
+			cout << "删除成功！" << endl;
+			return;
+		}
+	}
+	cout << "该菜不存在！" << endl;
+}
+
+void UserMenu(User *pUser, Order &order)
+{
+	cout << splitLine << endl
+		<< left
+		<< setw(6) << "编号"
+		<< setw(12) << "菜名"
+		<< setw(8) << "价格"
+		<< setw(4) << "数量"
+		<< endl;
+	vector<Dish> menu = order.getMenu();
+	vector<Dish>::iterator menuIt;
+	for (menuIt = menu.begin(); menuIt != menu.end(); ++menuIt) {
+		menuIt->PrintInfo();
+		cout << setw(4) << menuIt->getCount()
+			<< endl;
+	}
+}
+void SaveOrder(User *pUser, Order &order)
+{
+	int sel;
+	while (1) {
+		cout << splitLine << endl
+			<< "是否保存订单：" << endl
+			<< "1、是		2、否" << endl
+			<< splitLine << endl;
+		cin >> sel;
+		switch (sel)
+		{
+		case 1:
+			pUser->addOrder(order);
+			cout << "下单成功！" << endl;
+			return;
+		case 2:
+			cout << "该订单已取消！" << endl;
+			return;
+		default:
+			PrintInputError();
+			break;
+		}
+	}
+}
+/*管理员权限*/
+void AddUser()
+{
+	int id;
+	string name, psw, phone;
+	cout << "账号：";
+	cin >> id;
+
+	vector<User>::iterator userIt;
+	for (userIt = vecUser.begin(); userIt != vecUser.end(); ++userIt) {
+		if (userIt->getId() == id) {
+			cout << "该账号已存在！" << endl;
+			return;
+		}
+	}
+	cout << "用户名：";
+	cin >> name;
+	cout << "密码：";
+	cin >> psw;
+	cout << "电话号码：";
+	cin >> phone;
+	User user(id, name, psw, phone);
+	vecUser.push_back(user);
+	cout << "用户添加成功！" << endl;
+}
+void DeleteUser()
+{
+	int id;
+	string name, psw, phone;
+	cout << "账号：";
+	cin >> id;
+	vector<User>::iterator userIt;
+	for (userIt = vecUser.begin(); userIt != vecUser.end(); ++userIt) {
+		if (userIt->getId() == id) {
+			vecUser.erase(userIt);
+			cout << "删除用户成功！" << endl;
+			return;
+		}
+	}
+	cout << "该账号不存在！" << endl;
+}
+void ViewAllUsers()
+{
+	cout << left
+		<< setw(7) << "账号"
+		<< setw(10) << "用户名"
+		<< setw(8) << "密码"
+		<< setw(15) << "手机号"
+		<< endl;
+	vector<User>::iterator userIt;
+	for (userIt = vecUser.begin(); userIt != vecUser.end(); ++userIt) {
+		userIt->PrintInfo();
+		cout << endl;
+	}
+}
+void SaveUsers()
+{
+	FILE *pFile;
+	pFile = fopen(usersFileName, "w+");
+	vector<User>::iterator userIt;
+	for (userIt = vecUser.begin(); userIt != vecUser.end(); ++userIt) {
+		fprintf(pFile, "%d %s %s %s\n", userIt->getId(), userIt->getName().c_str(),
+			userIt->getPassword().c_str(), userIt->getPhoneNumber().c_str());
+	}
+	fclose(pFile);
+}
+/*工具函数*/
+void PrintInputError()
+{
+	cout << "输入有误！\n";
+}
